@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import './styleDashboard.css';
 import { Container, Row, Col, Card, Form, InputGroup, Button, Navbar, Nav } from 'react-bootstrap';
 
-// Custom CSS for the color palette
 const customStyles = {
     bodyBackground: { backgroundColor: '#DBE7C9', minHeight: '100vh' },
     cardBackground: { backgroundColor: '#789461', color: 'white' }, 
@@ -10,18 +8,17 @@ const customStyles = {
     buttonBackground: { backgroundColor: '#50623A', borderColor: '#50623A', color: 'white' }
 };
 
-const Dashboard = () => {
+const Dashboard = ({ onLogout }) => {  // Added onLogout prop
     const [products, setProducts] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [category, setCategory] = useState('All');
 
-    // Testing product data
+    // Testing product data 
     const productData = [
         { id: 1, name: 'Laptop', category: 'Electronics', price: 1200 },
         { id: 2, name: 'Headphones', category: 'Electronics', price: 150 },
         { id: 3, name: 'T-shirt', category: 'Clothing', price: 20 },
         { id: 4, name: 'Running Shoes', category: 'Footwear', price: 80 },
-        // Add more products as needed
     ];
 
     useEffect(() => {
@@ -46,7 +43,7 @@ const Dashboard = () => {
                     <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
                         <Nav>
                             <Nav.Link href="#" style={{ color: 'white' }}>Dashboard</Nav.Link>
-                            <Nav.Link href="#" style={{ color: 'white' }}>Logout</Nav.Link>
+                            <Nav.Link onClick={onLogout} style={{ color: 'white' }}>Logout</Nav.Link> {/* Logout link */}
                         </Nav>
                     </Navbar.Collapse>
                 </Container>

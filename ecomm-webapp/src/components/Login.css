@@ -1,0 +1,13 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #DBE7C9; /* Change background color if needed */
+  }
+  
+  .card {
+    width: 100%;
+    max-width: 400px; /* Card width */
+  }
+  
