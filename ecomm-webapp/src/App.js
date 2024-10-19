@@ -1,28 +1,32 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import Login from './components/Login';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleLogin = () => {
-    setIsAuthenticated(true);
+    setIsLoggedIn(true); // Set logged in status to true
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
+    setIsLoggedIn(false); // Set logged in status to false
   };
 
   return (
     <Router>
-      <div>
-        <Routes>
-          <Route path="/" element={isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/login" />} />
-          <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        </Routes>
-      </div>
+      <Routes>
+        {/* Redirect to Login if not logged in */}
+        <Route path="/" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />} />
+
+        {/* Protected Dashboard Route */}
+        <Route
+          path="/dashboard"
+          element={isLoggedIn ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/" />}
+        />
+      </Routes>
     </Router>
   );
 }
