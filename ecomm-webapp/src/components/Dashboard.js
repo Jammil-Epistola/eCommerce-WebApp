@@ -43,7 +43,7 @@ const Dashboard = ({ onLogout }) => {  // Added onLogout prop
                     <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
                         <Nav>
                             <Nav.Link href="#" style={{ color: 'white' }}>Dashboard</Nav.Link>
-                            <Nav.Link onClick={onLogout} style={{ color: 'white' }}>Logout</Nav.Link> {/* Logout link */}
+                            <Nav.Link onClick={onLogout} style={{ color: 'white' }}>Logout</Nav.Link>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>
