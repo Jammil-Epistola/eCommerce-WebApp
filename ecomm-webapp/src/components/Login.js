@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Card, Form, Button } from 'react-bootstrap';
-import './Login.css'; // Optional: You can style this page
+import './Login.css'; 
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
@@ -9,11 +9,10 @@ const Login = ({ onLogin }) => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-
-    // Basic authentication logic (replace this with your actual logic)
-    if (email === 'email@gmail.com' && password === 'password') {
-      onLogin(); // Call the onLogin prop function
-      setErrorMessage(''); // Clear error message
+  
+    if (email === 'admin@gmail.com' && password === 'password') {
+      onLogin();
+      setErrorMessage('');
     } else {
       setErrorMessage('Invalid email or password');
     }
@@ -60,3 +59,4 @@ const Login = ({ onLogin }) => {
 };
 
 export default Login;
+
