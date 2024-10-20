@@ -19,10 +19,10 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <Container style={{ minHeight: '100vh', backgroundColor: '#DBE7C9' }}>
-      <Card className="mx-auto my-5" style={{ width: '300px', backgroundColor: '#789461', color: 'white' }}>
+    <div className="login-container">
+      <Card className="login-card">
         <Card.Body>
-          <Card.Title className="text-center">Login</Card.Title>
+          <Card.Title className="text-center">Product Management Login</Card.Title>
           <Form onSubmit={handleLogin}>
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
@@ -48,15 +48,14 @@ const Login = ({ onLogin }) => {
 
             {errorMessage && <p className="text-danger">{errorMessage}</p>}
 
-            <Button variant="primary" type="submit" style={{ backgroundColor: '#50623A', borderColor: '#50623A' }}>
+            <Button className="login-button" type="submit">
               Login
             </Button>
           </Form>
         </Card.Body>
       </Card>
-    </Container>
+    </div>
   );
 };
 
 export default Login;
-
