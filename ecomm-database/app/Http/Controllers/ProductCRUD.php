@@ -10,8 +10,19 @@ class ProductCRUD extends Controller
         return Product::all();
     }
 
-    public function store(Request $request) {
-        $product = Product::create($request->all());
+    public function store(Request $request){
+
+        $validatedData = $request->validate([
+            'barcode' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'category' => 'required|string|max:255',
+            'avail_quantity' => 'required|integer',
+            'price' => 'required|numeric',
+        ]);
+
+        $product = Product::create($validatedData);
+
         return response()->json($product, 201);
     }
 
@@ -20,10 +31,19 @@ class ProductCRUD extends Controller
     }
 
    // Update a product
-    public function update(Request $request, $id) {
-    $product = Product::findOrFail($id);
-    $product->update($request->all());
-    return response()->json($product, 200);
+   public function update(Request $request, $id){
+        $validatedData = $request->validate([
+            'barcode' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'category' => 'required|string|max:255',
+            'avail_quantity' => 'required|integer',
+            'price' => 'required|numeric',
+        ]);
+
+        $product = Product::findOrFail($id);
+        $product->update($validatedData);
+        return response()->json($product, 200);
     }
 
     // Delete a product

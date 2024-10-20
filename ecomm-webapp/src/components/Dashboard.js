@@ -1,28 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, InputGroup, Button, Navbar, Nav, Modal } from 'react-bootstrap';
-
-const customStyles = {
-    bodyBackground: { backgroundColor: '#DBE7C9', minHeight: '100vh' },
-    cardBackground: { backgroundColor: '#789461', color: 'white' }, 
-    navbarBackground: { backgroundColor: '#294B29' }, 
-    buttonBackground: { backgroundColor: '#50623A', borderColor: '#50623A', color: 'white' },
-    redButton: { backgroundColor: 'red', borderColor: 'red', color: 'white' },
-    blueButton: { backgroundColor: 'blue', borderColor: 'blue', color: 'white' }
-};
+import './styleDashboard.css'; 
 
 const Dashboard = ({ onLogout }) => {
     const [products, setProducts] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [category, setCategory] = useState('All');
     const [showModal, setShowModal] = useState(false);
-    const [editingProduct, setEditingProduct] = useState(null); // For edit product
-    const [deletingProduct, setDeletingProduct] = useState(null); // For delete confirmation
+    const [showDeleteModal, setShowDeleteModal] = useState(false);  // Delete confirmation modal
+    const [editingProduct, setEditingProduct] = useState(null);  //  Edit
+    const [productToDelete, setProductToDelete] = useState(null);  // Delete
+
     const [newProduct, setNewProduct] = useState({
+        barcode: '',
         name: '',
-        category: 'Electronics',  // Default category
+        description: '',
+        category: 'Electronics',  // Default
+        avail_quantity: '',
         price: ''
     });
-
     // Fetch products from Laravel API
     useEffect(() => {
         fetch('http://127.0.0.1:8000/api/products')  
@@ -31,28 +27,41 @@ const Dashboard = ({ onLogout }) => {
             .catch(error => console.error('Error fetching products:', error));
     }, []);
 
+    // Handle: Add/Edit modal
     const handleAddProduct = () => {
-        setNewProduct({ name: '', category: 'Electronics', price: '' }); // Reset form
-        setEditingProduct(null); // Ensure we are not in editing mode
-        setShowModal(true); // Show the modal when 'Add Product' button is clicked
+        setNewProduct({
+            barcode: '',
+            name: '',
+            description: '',
+            category: 'Electronics', 
+            avail_quantity: '',
+            price: ''
+        });
+        setEditingProduct(null);
+        setShowModal(true);
+    };
+
+    const handleEditProduct = (product) => {
+        setNewProduct(product);  // Pre-fill the form with the product data
+        setEditingProduct(product); 
+        setShowModal(true);  
     };
 
     const handleSaveProduct = () => {
-        // Validate the input
-        if (!newProduct.name || !newProduct.price) {
+        if (!newProduct.barcode || !newProduct.name || !newProduct.description || !newProduct.price || !newProduct.avail_quantity) {
             alert('Please fill in all fields');
             return;
         }
-
-        const url = editingProduct
+    
+        const url = editingProduct 
             ? `http://127.0.0.1:8000/api/products/${editingProduct.id}`
             : 'http://127.0.0.1:8000/api/products';
-
+    
         const method = editingProduct ? 'PUT' : 'POST';
-
-        // Send new/updated product data to Laravel backend
+    
+        // Save or update the product via the API
         fetch(url, {
-            method,
+            method: method,
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -61,43 +70,46 @@ const Dashboard = ({ onLogout }) => {
         .then(response => response.json())
         .then(data => {
             if (editingProduct) {
-                setProducts(products.map(product => (product.id === data.id ? data : product)));
+                setProducts(products.map(p => (p.id === editingProduct.id ? data : p)));
             } else {
                 setProducts([...products, data]);
             }
-            setShowModal(false); // Close the modal after successful submission
-            setNewProduct({ name: '', category: 'Electronics', price: '' }); // Reset the form
+    
+            setShowModal(false);
+            setNewProduct({
+                barcode: '',
+                name: '',
+                description: '',
+                category: 'Electronics',
+                avail_quantity: '',
+                price: ''
+            });
         })
         .catch(error => console.error('Error saving product:', error));
     };
 
-    const handleEditProduct = (product) => {
-        setNewProduct(product); // Populate form with the selected product
-        setEditingProduct(product); // Set editing state
-        setShowModal(true); // Show modal for editing
-    };
-
+    // Handle showing delete confirmation modal
     const handleDeleteProduct = (product) => {
-        setDeletingProduct(product); // Store product for deletion confirmation
+        setProductToDelete(product);
+        setShowDeleteModal(true);
     };
 
+    // Confirm deletion
     const confirmDeleteProduct = () => {
-        fetch(`http://127.0.0.1:8000/api/products/${deletingProduct.id}`, {
+        if (!productToDelete) return;
+
+        fetch(`http://127.0.0.1:8000/api/products/${productToDelete.id}`, {
             method: 'DELETE'
         })
         .then(() => {
-            setProducts(products.filter(product => product.id !== deletingProduct.id));
-            setDeletingProduct(null); // Close delete confirmation modal
+            setProducts(products.filter(p => p.id !== productToDelete.id));
+            setShowDeleteModal(false);
         })
         .catch(error => console.error('Error deleting product:', error));
     };
 
-    const handleModalClose = () => {
-        setShowModal(false);
-        setEditingProduct(null); // Reset edit state when modal is closed
-    };
-
-    const handleDeleteModalClose = () => setDeletingProduct(null); // Close delete modal
+    const handleModalClose = () => setShowModal(false);
+    const handleDeleteModalClose = () => setShowDeleteModal(false);
 
     // Filter and search logic
     const filteredProducts = products.filter(product => {
@@ -108,16 +120,16 @@ const Dashboard = ({ onLogout }) => {
     });
 
     return (
-        <div style={customStyles.bodyBackground}>
+        <div className="bodyBackground">
             {/* Navbar */}
-            <Navbar expand="lg" variant="dark" style={customStyles.navbarBackground}>
+            <Navbar expand="lg" variant="dark" className="navbarBackground">
                 <Container>
                     <Navbar.Brand href="#">Dashboard</Navbar.Brand>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
                         <Nav>
-                            <Nav.Link href="#" style={{ color: 'white' }}>Dashboard</Nav.Link>
-                            <Nav.Link onClick={onLogout} style={{ color: 'white' }}>Logout</Nav.Link>
+                            <Nav.Link href="#">Dashboard</Nav.Link>
+                            <Nav.Link onClick={onLogout}>Logout</Nav.Link>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>
@@ -134,19 +146,29 @@ const Dashboard = ({ onLogout }) => {
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                             />
-                            <Button variant="primary" style={customStyles.buttonBackground}>Search</Button>
+                            <Button variant="primary" className="buttonBackground">Search</Button>
                         </InputGroup>
                     </Col>
                     <Col md={4}>
                         <Form.Select value={category} onChange={e => setCategory(e.target.value)}>
                             <option value="All">All Categories</option>
-                            <option value="Electronics">Electronics</option>
+                            <option value="Accessories">Accessories</option>
+                            <option value="Appliances">Appliances</option>
                             <option value="Clothing">Clothing</option>
-                            <option value="Footwear">Footwear</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Frozen Goods">Frozen Goods</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Laundry Supplies">Laundry Supplies</option>
+                            <option value="Office Supplies">Office Supplies</option>
+                            <option value="School Supplies">School Supplies</option>
+                            <option value="Shoes">Shoes</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Toys">Toys</option>
+                            <option value="Vegetable">Vegetable</option>
                         </Form.Select>
                     </Col>
                     <Col md={3}>
-                        <Button variant="success" onClick={handleAddProduct} style={customStyles.buttonBackground}>
+                        <Button variant="success" onClick={handleAddProduct} className="buttonBackground">
                             + Add Product
                         </Button>
                     </Col>
@@ -156,34 +178,35 @@ const Dashboard = ({ onLogout }) => {
                 <Row>
                     {filteredProducts.length === 0 ? (
                         <Col md={12}>
-                            <Card style={customStyles.cardBackground}>
+                            <Card className="cardBackground">
                                 <Card.Body>No products found</Card.Body>
                             </Card>
                         </Col>
                     ) : (
                         filteredProducts.map(product => (
                             <Col md={4} key={product.id} className="my-2">
-                                <Card style={customStyles.cardBackground}>
+                                <Card className="cardBackground">
                                     <Card.Body>
                                         <Card.Title>{product.name}</Card.Title>
-                                        <Card.Subtitle className="mb-2 text-white">
-                                            Category: {product.category}
+                                        <Card.Subtitle className="mb-2">
+                                            Barcode: {product.barcode}
                                         </Card.Subtitle>
                                         <Card.Text>
-                                            Price: ${product.price}
+                                            Description: {product.description}
                                         </Card.Text>
-                                        {/* Edit and Delete Buttons */}
-                                        <Button 
-                                            onClick={() => handleEditProduct(product)} 
-                                            style={customStyles.blueButton} 
-                                            className="me-2"
-                                        >
+                                        <Card.Text>
+                                            Category: {product.category}
+                                        </Card.Text>
+                                        <Card.Text>
+                                            Available Quantity: {product.avail_quantity}
+                                        </Card.Text>
+                                        <Card.Text>
+                                            Price: ₱{product.price}
+                                        </Card.Text>
+                                        <Button onClick={() => handleEditProduct(product)} className="blueButton me-2">
                                             Edit
                                         </Button>
-                                        <Button 
-                                            onClick={() => handleDeleteProduct(product)} 
-                                            style={customStyles.redButton}
-                                        >
+                                        <Button onClick={() => handleDeleteProduct(product)} className="redButton">
                                             Delete
                                         </Button>
                                     </Card.Body>
@@ -199,37 +222,75 @@ const Dashboard = ({ onLogout }) => {
                         <Modal.Title>{editingProduct ? 'Edit Product' : 'Add Product'}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <Form>
-                            <Form.Group controlId="productName">
-                                <Form.Label>Product Name</Form.Label>
-                                <Form.Control 
-                                    type="text" 
-                                    placeholder="Enter product name"
-                                    value={newProduct.name}
-                                    onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="productCategory" className="mt-3">
-                                <Form.Label>Category</Form.Label>
-                                <Form.Select
-                                    value={newProduct.category}
-                                    onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
-                                >
-                                    <option value="Electronics">Electronics</option>
-                                    <option value="Clothing">Clothing</option>
-                                    <option value="Footwear">Footwear</option>
-                                </Form.Select>
-                            </Form.Group>
-                            <Form.Group controlId="productPrice" className="mt-3">
-                                <Form.Label>Price</Form.Label>
-                                <Form.Control 
-                                    type="number" 
-                                    placeholder="Enter price"
-                                    value={newProduct.price}
-                                    onChange={e => setNewProduct({ ...newProduct, price: e.target.value })}
-                                />
-                            </Form.Group>
-                        </Form>
+                    <Form>
+                        <Form.Group controlId="productBarcode">
+                            <Form.Label>Barcode</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Enter product barcode"
+                                value={newProduct.barcode}
+                                onChange={e => setNewProduct({ ...newProduct, barcode: e.target.value })}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="productName" className="mt-3">
+                            <Form.Label>Name</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Enter product name"
+                                value={newProduct.name}
+                                onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="productDescription" className="mt-3">
+                            <Form.Label>Description</Form.Label>
+                            <Form.Control 
+                                as="textarea" 
+                                rows={3}
+                                placeholder="Enter product description"
+                                value={newProduct.description}
+                                onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="productCategory" className="mt-3">
+                            <Form.Label>Category</Form.Label>
+                            <Form.Select
+                                value={newProduct.category}
+                                onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
+                            >
+                                <option value="Accessories">Accessories</option>
+                                <option value="Appliances">Appliances</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Frozen Goods">Frozen Goods</option>
+                                <option value="Fruits">Fruits</option>
+                                <option value="Laundry Supplies">Laundry Supplies</option>
+                                <option value="Office Supplies">Office Supplies</option>
+                                <option value="School Supplies">School Supplies</option>
+                                <option value="Shoes">Shoes</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Toys">Toys</option>
+                                <option value="Vegetable">Vegetable</option>
+                            </Form.Select>
+                        </Form.Group>
+                        <Form.Group controlId="productAvailQuantity" className="mt-3">
+                            <Form.Label>Available Quantity</Form.Label>
+                            <Form.Control 
+                                type="number" 
+                                placeholder="Enter available quantity"
+                                value={newProduct.avail_quantity}
+                                onChange={e => setNewProduct({ ...newProduct, avail_quantity: e.target.value })}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="productPrice" className="mt-3">
+                            <Form.Label>Price</Form.Label>
+                            <Form.Control 
+                                type="number" 
+                                placeholder="Enter product price"
+                                value={newProduct.price}
+                                onChange={e => setNewProduct({ ...newProduct, price: e.target.value })}
+                            />
+                        </Form.Group>
+                    </Form>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={handleModalClose}>
@@ -242,12 +303,12 @@ const Dashboard = ({ onLogout }) => {
                 </Modal>
 
                 {/* Delete Confirmation Modal */}
-                <Modal show={!!deletingProduct} onHide={handleDeleteModalClose}>
+                <Modal show={showDeleteModal} onHide={handleDeleteModalClose}>
                     <Modal.Header closeButton>
-                        <Modal.Title>Delete Confirmation</Modal.Title>
+                        <Modal.Title>Confirm Deletion</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        Are you sure you want to delete "{deletingProduct?.name}"?
+                        Are you sure you want to delete "{productToDelete?.name}"?
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={handleDeleteModalClose}>

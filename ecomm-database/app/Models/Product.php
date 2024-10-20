@@ -9,16 +9,6 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'category', 'price'];
+    protected $fillable = ['barcode', 'name', 'description', 'price', 'avail_quantity', 'category'];
 
-    public function store(Request $request)
-{
-    $product = new Product();
-    $product->name = $request->name;
-    $product->category = $request->category;
-    $product->price = $request->price;
-    $product->save();
-
-    return response()->json($product);
-}
 }
